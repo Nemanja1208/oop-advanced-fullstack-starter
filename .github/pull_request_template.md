@@ -1,7 +1,7 @@
 ## Vad gör den här PR:en?
 <!-- En eller två meningar. Vad ändras, och varför? -->
 
-Fixar #<!-- issue-nummer -->
+Fixes #<!-- issue-nummer. Måste vara på engelska (Fixes/Closes) för att GitHub ska stänga issuen automatiskt -->
 
 ## Hur testade du?
 <!-- Vad körde du, vad klickade du på, vad såg du? -->
