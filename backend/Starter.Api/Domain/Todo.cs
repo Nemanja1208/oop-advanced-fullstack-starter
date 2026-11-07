@@ -11,5 +11,11 @@ public sealed class Todo
 
     public DateTimeOffset CreatedAt { get; set; }
 
-    public DateTime? DueDate { get; set; }
+    /// <summary>The last day the todo may be finished on, in Swedish time. A date, not a timestamp: "by Friday" means all of Friday.</summary>
+    public DateOnly? DueDate { get; set; }
+
+    public Priority Priority { get; set; } = Priority.Normal;
+
+    /// <summary>When the todo was marked done. Needed to measure whether deadlines are met.</summary>
+    public DateTimeOffset? CompletedAt { get; set; }
 }

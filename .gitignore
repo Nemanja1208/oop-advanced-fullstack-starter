@@ -21,3 +21,8 @@ coverage/
 .idea/
 .DS_Store
 Thumbs.db
+
+# BenchmarkDotNet output
+BenchmarkDotNet.Artifacts/
+# Load-test database
+perf.db

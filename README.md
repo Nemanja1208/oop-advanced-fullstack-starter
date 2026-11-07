@@ -13,6 +13,7 @@ backend/
   Starter.slnx
   Starter.Api/          .NET 10 Web API (controllers → service → repository → EF Core + SQLite)
   Starter.Tests/        xUnit: unit tests (fake repository) + integration tests (real API in memory)
+  Starter.Benchmarks/   BenchmarkDotNet: measures the work-list sorting
 frontend/               React 19 + Vite + TypeScript, Vitest, Prettier, oxlint
 ```
 
@@ -64,4 +65,18 @@ first exercise of the course.
 | GET | `/health` | `200 { status: "ok" }` |
 | GET | `/api/todos` | `200` list of todos |
 | POST | `/api/todos` | `201` created todo, `400` if the title is empty or too long |
+| GET | `/api/todos/overdue` | `200` overdue todos with days late |
+| GET | `/api/todos/stats` | `200` on-time / late / overdue counts and the on-time rate |
 | PUT | `/api/todos/{id}/done` | `200` updated todo, `404` if it doesn't exist |
+
+> The database schema changed in week 2. If the API fails to start or returns 500 after you pull, delete
+> `backend/Starter.Api/starter.db` and start again (it is recreated automatically).
+
+## Week 2: from requirement to number
+
+- `docs/arendet.md`: the customer's request and bug report
+- `docs/kravspec.md`: user stories, acceptance criteria, use case, non-functional requirements and metrics
+- `docs/matning.md`: how the numbers were measured, and the results
+- Every test is tagged with the requirement it proves: `dotnet test --filter "Krav=AK-2.1"`
+- `Starter.Benchmarks/`: BenchmarkDotNet, `dotnet run -c Release --project Starter.Benchmarks`
+- `perf/seed.mjs` + `npx autocannon`: load test of the API
