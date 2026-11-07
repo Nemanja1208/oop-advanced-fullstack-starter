@@ -25,7 +25,7 @@ public sealed class TodoService(ITodoRepository repository, TimeProvider clock)
             return OperationResult<TodoResponse>.Invalid($"Title can be at most {TodoRules.MaxTitleLength} characters.");
         }
 
-        var todo = new Todo { Title = title, CreatedAt = clock.GetUtcNow() };
+        var todo = new Todo { Title = title, CreatedAt = clock.GetUtcNow(), DueDate = request.DueDate };
         await repository.AddAsync(todo, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         return OperationResult<TodoResponse>.Ok(ToResponse(todo));
@@ -44,5 +44,5 @@ public sealed class TodoService(ITodoRepository repository, TimeProvider clock)
         return OperationResult<TodoResponse>.Ok(ToResponse(todo));
     }
 
-    private static TodoResponse ToResponse(Todo todo) => new(todo.Id, todo.Title, todo.IsDone, todo.CreatedAt);
+    private static TodoResponse ToResponse(Todo todo) => new(todo.Id, todo.Title, todo.IsDone, todo.CreatedAt, todo.DueDate);
 }

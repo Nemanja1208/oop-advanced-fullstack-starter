@@ -10,4 +10,6 @@ public sealed class Todo
     public bool IsDone { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
+
+    public DateTime? DueDate { get; set; }
 }
