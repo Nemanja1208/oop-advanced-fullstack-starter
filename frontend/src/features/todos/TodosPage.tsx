@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { createTodo, fetchTodos } from './api/todosApi'
 import { TodoList } from './components/TodoList'
+import { defaultTeam, teams } from './teams'
 import type { Todo } from './types'
 
 type LoadState =
@@ -10,19 +11,20 @@ type LoadState =
 export function TodosPage() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [title, setTitle] = useState('')
+  const [team, setTeam] = useState<string>(defaultTeam)
 
   useEffect(() => {
-    fetchTodos()
+    fetchTodos(team)
       .then((todos) => setState({ status: 'ready', todos }))
       .catch(() => setState({ status: 'error', message: 'Kunde inte hämta uppgifterna. Körs API:t?' }))
-  }, [])
+  }, [team])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (title.trim() === '' || state.status !== 'ready') {
       return
     }
-    const created = await createTodo(title)
+    const created = await createTodo(team, title)
     setState({ status: 'ready', todos: [created, ...state.todos] })
     setTitle('')
   }
@@ -30,6 +32,14 @@ export function TodosPage() {
   return (
     <main>
       <h1>Uppgifter</h1>
+      <label htmlFor="team">Team</label>
+      <select id="team" value={team} onChange={(event) => setTeam(event.target.value)}>
+        {teams.map((t) => (
+          <option key={t.slug} value={t.slug}>
+            {t.name}
+          </option>
+        ))}
+      </select>
       <form onSubmit={handleSubmit}>
         <label htmlFor="title">Ny uppgift</label>
         <input id="title" value={title} onChange={(event) => setTitle(event.target.value)} />

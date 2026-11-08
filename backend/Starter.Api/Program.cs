@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Starter.Api.Data;
+using Starter.Api.Features.Teams;
 using Starter.Api.Features.Todos;
 
 const string FrontendCorsPolicy = "frontend";
@@ -13,8 +14,10 @@ builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddSingleton(TimeProvider.System);
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddScoped<TeamContext>();
 builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 builder.Services.AddScoped<TodoService>();
 
@@ -22,9 +25,8 @@ builder.Services.AddScoped<TodoService>();
 var deadlineTimeZone = TimeZoneInfo.FindSystemTimeZoneById(builder.Configuration["Deadlines:TimeZone"] ?? "Europe/Stockholm");
 builder.Services.AddSingleton(sp => new DeadlineCalendar(sp.GetRequiredService<TimeProvider>(), deadlineTimeZone));
 
-var frontendOrigin = builder.Configuration["Frontend:Origin"] ?? "http://localhost:5173";
 builder.Services.AddCors(options =>
-    options.AddPolicy(FrontendCorsPolicy, policy => policy.WithOrigins(frontendOrigin).AllowAnyHeader().AllowAnyMethod()));
+    options.AddPolicy(FrontendCorsPolicy, policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
 var app = builder.Build();
 
@@ -34,12 +36,13 @@ using (var scope = app.Services.CreateScope())
     scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreated();
 }
 
+app.UseDeveloperExceptionPage();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-app.UseExceptionHandler();
 app.UseCors(FrontendCorsPolicy);
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));

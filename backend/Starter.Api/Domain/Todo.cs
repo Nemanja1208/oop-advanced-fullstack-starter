@@ -7,6 +7,12 @@ public sealed class Todo
 
     public string Title { get; set; } = string.Empty;
 
+    /// <summary>Which team owns the todo. One team must never see or change another team's todos.</summary>
+    public int TeamId { get; set; }
+
+    /// <summary>Soft-delete flag: a hidden todo is kept in the database but left out of the lists.</summary>
+    public bool IsDeleted { get; set; }
+
     public bool IsDone { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

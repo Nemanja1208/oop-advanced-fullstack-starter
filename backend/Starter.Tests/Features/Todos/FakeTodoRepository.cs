@@ -23,6 +23,10 @@ internal sealed class FakeTodoRepository : ITodoRepository
     public Task<int> CountOverdueAsync(DateOnly today, CancellationToken cancellationToken) =>
         Task.FromResult(_todos.Count(t => TodoDeadlines.IsOverdue(t, today)));
 
+    public Task<IReadOnlyList<Todo>> SearchAsync(string query, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<Todo>>(
+            _todos.Where(t => t.Title.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList());
+
     public Task<Todo?> FindAsync(int id, CancellationToken cancellationToken) =>
         Task.FromResult(_todos.FirstOrDefault(t => t.Id == id));
 
@@ -32,6 +36,8 @@ internal sealed class FakeTodoRepository : ITodoRepository
         _todos.Add(todo);
         return Task.CompletedTask;
     }
+
+    public void Remove(Todo todo) => _todos.Remove(todo);
 
     public Task SaveChangesAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

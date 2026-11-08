@@ -15,9 +15,14 @@ public interface ITodoRepository
 
     Task<int> CountOverdueAsync(DateOnly today, CancellationToken cancellationToken);
 
+    /// <summary>Free-text search over titles.</summary>
+    Task<IReadOnlyList<Todo>> SearchAsync(string query, CancellationToken cancellationToken);
+
     Task<Todo?> FindAsync(int id, CancellationToken cancellationToken);
 
     Task AddAsync(Todo todo, CancellationToken cancellationToken);
+
+    void Remove(Todo todo);
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -14,6 +14,21 @@ public sealed class TodoService(ITodoRepository repository, DeadlineCalendar cal
             TodoOrdering.ForWorkList(todos, today).Select(t => ToResponse(t, today)).ToList());
     }
 
+    public async Task<OperationResult<IReadOnlyList<TodoResponse>>> SearchAsync(string query, CancellationToken cancellationToken)
+    {
+        var today = calendar.Today();
+        var todos = await repository.SearchAsync(query ?? string.Empty, cancellationToken);
+        return OperationResult<IReadOnlyList<TodoResponse>>.Ok(todos.Select(t => ToResponse(t, today)).ToList());
+    }
+
+    public async Task<OperationResult<TodoResponse>> GetAsync(int id, CancellationToken cancellationToken)
+    {
+        var todo = await repository.FindAsync(id, cancellationToken);
+        return todo is null
+            ? OperationResult<TodoResponse>.NotFound($"Todo {id} was not found.")
+            : OperationResult<TodoResponse>.Ok(ToResponse(todo, calendar.Today()));
+    }
+
     public async Task<OperationResult<IReadOnlyList<OverdueTodoResponse>>> ListOverdueAsync(CancellationToken cancellationToken)
     {
         var today = calendar.Today();
@@ -37,7 +52,7 @@ public sealed class TodoService(ITodoRepository repository, DeadlineCalendar cal
     {
         var title = request.Title?.Trim() ?? string.Empty;
         var today = calendar.Today();
-        var errors = Validate(title, request, today);
+        var errors = Validate(title, request.DueDate, request.Priority, today);
         if (errors.Count > 0)
         {
             return OperationResult<TodoResponse>.Invalid([.. errors]);
@@ -49,10 +64,54 @@ public sealed class TodoService(ITodoRepository repository, DeadlineCalendar cal
             CreatedAt = calendar.Now(),
             DueDate = request.DueDate,
             Priority = request.Priority ?? Priority.Normal,
+            TeamId = request.TeamId ?? 0,
+            IsDeleted = request.IsDeleted,
         };
         await repository.AddAsync(todo, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         return OperationResult<TodoResponse>.Ok(ToResponse(todo, today));
+    }
+
+    public async Task<OperationResult<TodoResponse>> UpdateAsync(int id, UpdateTodoRequest request, CancellationToken cancellationToken)
+    {
+        var todo = await repository.FindAsync(id, cancellationToken);
+        if (todo is null)
+        {
+            return OperationResult<TodoResponse>.NotFound($"Todo {id} was not found.");
+        }
+
+        var title = request.Title?.Trim() ?? string.Empty;
+        var today = calendar.Today();
+        var errors = Validate(title, request.DueDate, request.Priority, today);
+        if (errors.Count > 0)
+        {
+            return OperationResult<TodoResponse>.Invalid([.. errors]);
+        }
+
+        todo.Title = title;
+        todo.DueDate = request.DueDate;
+        todo.Priority = request.Priority ?? todo.Priority;
+        if (request.TeamId is { } teamId)
+        {
+            todo.TeamId = teamId;
+        }
+
+        todo.IsDeleted = request.IsDeleted;
+        await repository.SaveChangesAsync(cancellationToken);
+        return OperationResult<TodoResponse>.Ok(ToResponse(todo, today));
+    }
+
+    public async Task<OperationResult<TodoResponse>> DeleteAsync(int id, CancellationToken cancellationToken)
+    {
+        var todo = await repository.FindAsync(id, cancellationToken);
+        if (todo is null)
+        {
+            return OperationResult<TodoResponse>.NotFound($"Todo {id} was not found.");
+        }
+
+        repository.Remove(todo);
+        await repository.SaveChangesAsync(cancellationToken);
+        return OperationResult<TodoResponse>.Ok(ToResponse(todo, calendar.Today()));
     }
 
     public async Task<OperationResult<TodoResponse>> MarkDoneAsync(int id, CancellationToken cancellationToken)
@@ -69,7 +128,7 @@ public sealed class TodoService(ITodoRepository repository, DeadlineCalendar cal
         return OperationResult<TodoResponse>.Ok(ToResponse(todo, calendar.Today()));
     }
 
-    private static List<string> Validate(string title, CreateTodoRequest request, DateOnly today)
+    private static List<string> Validate(string title, DateOnly? dueDate, Priority? priority, DateOnly today)
     {
         var errors = new List<string>();
         if (title.Length == 0)
@@ -81,12 +140,12 @@ public sealed class TodoService(ITodoRepository repository, DeadlineCalendar cal
             errors.Add($"Title can be at most {TodoRules.MaxTitleLength} characters.");
         }
 
-        if (request.DueDate is { } due && due < today)
+        if (dueDate is { } due && due < today)
         {
             errors.Add($"Förfallodatumet {due:yyyy-MM-dd} har redan passerat.");
         }
 
-        if (request.Priority is { } priority && !Enum.IsDefined(priority))
+        if (priority is { } p && !Enum.IsDefined(p))
         {
             errors.Add("Priority must be Low, Normal or High.");
         }

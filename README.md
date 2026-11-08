@@ -1,3 +1,9 @@
+> # ⚠️ ÖVNINGSBRANCH – SÅRBAR MED FLIT
+>
+> Den här branchen (`exercise/vecka-3-holes`) innehåller **medvetet inbyggda säkerhetshål**.
+> Den är ett övningsmål för vecka 3 ("Tänk som en angripare"). **Kör bara lokalt. Deploya aldrig.**
+> Lägg aldrig riktig data här. Läs `docs/vecka-3-las-mig-forst.md` innan du börjar.
+
 # Fullstack Starter: .NET 10 API + React
 
 A small, honest fullstack app to practise on: a todo list with a .NET 10 Web API backend and a
@@ -60,14 +66,21 @@ first exercise of the course.
 
 ## Endpoints
 
+All `/api/todos` endpoints read the caller's team from the `X-Team` request header (week 3). A
+missing header falls back to the `utveckling` team. Real login arrives in week 4.
+
 | Method | URL | Result |
 |---|---|---|
 | GET | `/health` | `200 { status: "ok" }` |
 | GET | `/api/todos` | `200` list of todos |
+| GET | `/api/todos/search?q=` | `200` todos whose title matches |
 | POST | `/api/todos` | `201` created todo, `400` if the title is empty or too long |
+| GET | `/api/todos/{id}` | `200` one todo, `404` if it doesn't exist |
 | GET | `/api/todos/overdue` | `200` overdue todos with days late |
 | GET | `/api/todos/stats` | `200` on-time / late / overdue counts and the on-time rate |
+| PUT | `/api/todos/{id}` | `200` updated todo, `404` if it doesn't exist |
 | PUT | `/api/todos/{id}/done` | `200` updated todo, `404` if it doesn't exist |
+| DELETE | `/api/todos/{id}` | `200` deleted todo, `404` if it doesn't exist |
 
 > The database schema changed in week 2. If the API fails to start or returns 500 after you pull, delete
 > `backend/Starter.Api/starter.db` and start again (it is recreated automatically).

@@ -1,0 +1,57 @@
+### Vecka 3 – vanliga anrop att utforska appen med.
+### Kör raderna i VS Code (REST Client) eller Rider. Byt @team för att spela ett annat team.
+### Obs: sårbar övningsbranch – kör bara lokalt.
+
+@baseUrl = http://localhost:5069
+@team = salj
+
+### Hälsokoll (ingen header behövs)
+GET {{baseUrl}}/health
+
+### Lista mina uppgifter
+GET {{baseUrl}}/api/todos
+X-Team: {{team}}
+
+### Skapa en uppgift
+POST {{baseUrl}}/api/todos
+X-Team: {{team}}
+Content-Type: application/json
+
+{
+  "title": "Ring kunden",
+  "priority": "High"
+}
+
+### Hämta en enskild uppgift (byt id)
+GET {{baseUrl}}/api/todos/101
+X-Team: {{team}}
+
+### Sök bland uppgifter
+GET {{baseUrl}}/api/todos/search?q=offert
+X-Team: {{team}}
+
+### Försenade uppgifter
+GET {{baseUrl}}/api/todos/overdue
+X-Team: {{team}}
+
+### Statistik
+GET {{baseUrl}}/api/todos/stats
+X-Team: {{team}}
+
+### Uppdatera en uppgift (byt id)
+PUT {{baseUrl}}/api/todos/101
+X-Team: {{team}}
+Content-Type: application/json
+
+{
+  "title": "Ring kunden igen",
+  "priority": "Normal"
+}
+
+### Markera klar (byt id)
+PUT {{baseUrl}}/api/todos/101/done
+X-Team: {{team}}
+
+### Ta bort en uppgift (byt id)
+DELETE {{baseUrl}}/api/todos/101
+X-Team: {{team}}
